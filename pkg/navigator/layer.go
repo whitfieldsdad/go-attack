@@ -1,5 +1,7 @@
 package navigator
 
+import "errors"
+
 const (
 	EnterpriseAttack = "enterprise-attack"
 	MobileAttack     = "mobile-attack"
@@ -7,6 +9,9 @@ const (
 )
 
 func NewLayer(name, domain string) (*Layer, error) {
+	if domain != EnterpriseAttack && domain != MobileAttack && domain != ICSAttack {
+		return nil, errors.New("invalid domain")
+	}
 	layer := &Layer{
 		Name:   name,
 		Domain: domain,
@@ -48,7 +53,11 @@ type Layer struct {
 	Links                         []Link       `json:"links" yaml:"links"`
 }
 
-func (layer Layer) GetSelectedTechniques() []Technique {
+func (layer *Layer) AddTechniques(techniques ...Technique) {
+	layer.Techniques = append(layer.Techniques, techniques...)
+}
+
+func (layer *Layer) GetSelectedTechniques() []Technique {
 	var results []Technique
 	for _, technique := range layer.Techniques {
 		if technique.TechniqueID == "" || technique.Color == "" {
@@ -62,7 +71,7 @@ func (layer Layer) GetSelectedTechniques() []Technique {
 	return results
 }
 
-func (layer Layer) GetSelectedTechniqueIds() []string {
+func (layer *Layer) GetSelectedTechniqueIds() []string {
 	var ids []string
 	for _, technique := range layer.GetSelectedTechniques() {
 		ids = append(ids, technique.TechniqueID)
